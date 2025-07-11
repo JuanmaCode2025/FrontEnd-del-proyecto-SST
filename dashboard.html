@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VitaWork - Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    :root {
+    --primary-color: #6c63ff;
+    --secondary-color: #4dabf7;
+    --accent-color: #69db7c;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --success-color: #4cc9f0;
+    --warning-color: #f72585;
+    --info-color: #560bad;
+    --card-bg: #ffffff;
+    --sidebar-bg: #2b2d42;
+    --sidebar-text: #edf2f4;
+    }
+
+    body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f7fa;
+    color: var(--dark-color);
+    }
+
+    .sidebar {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    min-height: 100vh;
+    width: 250px;
+    transition: all 0.3s;
+    position: fixed;
+    z-index: 1000;
+    }
+
+    .sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-menu {
+    padding: 1rem 0;
+    }
+
+    .sidebar-menu .nav-link {
+    color: var(--sidebar-text);
+    padding: 0.75rem 1.5rem;
+    margin: 0.25rem 0;
+    border-radius: 0;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    }
+
+    .sidebar-menu .nav-link:hover, 
+    .sidebar-menu .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    }
+
+    .sidebar-menu .nav-link i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+    }
+
+    .main-content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: all 0.3s;
+    }
+
+    .navbar-custom {
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 1.5rem;
+    }
+
+    .user-profile {
+    display: flex;
+    align-items: center;
+    }
+
+    .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+    }
+
+    .dashboard-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    }
+
+    .dashboard-title i {
+    margin-right: 15px;
+    color: var(--primary-color);
+    }
+
+    .card-custom {
+    background: var(--card-bg);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    height: 100%;
+    }
+
+    .card-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header-custom {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 1rem 1.5rem;
+    border-bottom: none;
+    }
+
+    .card-body-custom {
+    padding: 1.5rem;
+    }
+
+    .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    }
+
+    .progress-custom {
+    height: 10px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+    }
+
+    .progress-custom .progress-bar {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    }
+
+    .btn-custom {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    }
+
+    .btn-custom:hover {
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .badge-custom {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    font-weight: 500;
+    }
+
+    .chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+    }
+
+    .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.6rem;
+    background-color: var(--warning-color);
+    }
+
+    .pulse-status {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    }
+
+    .pulse-normal {
+    background-color: #4ade80;
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+    animation: pulse-normal 2s infinite;
+    }
+
+    @keyframes pulse-normal {
+    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+    }
+
+    .pulse-warning {
+    background-color: #f59e0b;
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    animation: pulse-warning 2s infinite;
+    }
+
+    @keyframes pulse-warning {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    .pulse-danger {
+    background-color: #f72585;
+    box-shadow: 0 0 0 0 rgba(247, 37, 133, 0.7);
+    animation: pulse-danger 2s infinite;
+    }
+
+    @keyframes pulse-danger {
+    0% { box-shadow: 0 0 0 0 rgba(247, 37, 133, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(247, 37, 133, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(247, 37, 133, 0); }
+    }
+
+    .activity-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s;
+    }
+
+    .activity-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    .activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    }
+
+    .activity-content {
+    flex-grow: 1;
+    }
+
+    .activity-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+    }
+
+    .posture-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    }
+
+    .posture-good {
+    background-color: #4ade80;
+    }
+
+    .posture-fair {
+    background-color: #f59e0b;
+    }
+
+    .posture-poor {
+    background-color: #f72585;
+    }
+
+    .leaderboard-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s;
+    }
+
+    .leaderboard-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    .leaderboard-rank {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-weight: bold;
+    background-color: var(--primary-color);
+    color: white;
+    flex-shrink: 0;
+    }
+
+    .leaderboard-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    object-fit: cover;
+    }
+
+    .leaderboard-points {
+    margin-left: auto;
+    font-weight: bold;
+    color: var(--primary-color);
+    }
+
+    @media (max-width: 992px) {
+    .sidebar {
+        margin-left: -250px;
+    }
+    .sidebar.active {
+        margin-left: 0;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    .navbar-brand {
+        display: none;
+    }
+    }
+
+    .sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--dark-color);
+    cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+    <h4 class="mb-0"><i class="bi bi-shield-check me-2"></i>VitaWork</h4>
+    <small class="text-muted">Bienestar y Seguridad</small>
+    </div>
+    <div class="sidebar-menu">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+        <a class="nav-link active" href="#">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        </li>
+        <li class="nav-item">
+        <a class="nav-link" href="#">
+            <i class="bi bi-heart-pulse"></i> Salud
+        </a>
+        </li>
+        <li class="nav-item">
+        <a class="nav-link" href="#">
+            <i class="bi bi-clock-history"></i> Pausas Activas
+        </a>
+        </li>
+        <li class="nav-item">
+        <a class="nav-link" href="#">
+            <i class="bi bi-stars"></i> Gamificación
+        </a>
+        </li>
+        <li class="nav-item">
+        <a class="nav-link" href="#">
+            <i class="bi bi-exclamation-triangle"></i> Alertas
+        </a>
+        </li>
+        <li class="nav-item d-none admin-only">
+        <a class="nav-link" href="#">
+            <i class="bi bi-people"></i> Usuarios
+        </a>
+        </li>
+    </ul>
+    </div>
+    <div class="sidebar-footer position-absolute bottom-0 start-0 end-0 p-3">
+    <div class="d-flex align-items-center">
+        <img src="https://ui-avatars.com/api/?name=Usuario&background=random" alt="User" class="user-avatar">
+        <div class="ms-2">
+        <h6 class="mb-0" id="sidebar-username">Usuario</h6>
+        <small class="text-muted" id="sidebar-role">Rol</small>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <nav class="navbar navbar-expand-lg navbar-custom mb-4">
+    <div class="container-fluid">
+        <button class="sidebar-toggle d-lg-none me-3">
+        <i class="bi bi-list"></i>
+        </button>
+        <a class="navbar-brand d-none d-lg-block" href="#">
+        <i class="bi bi-shield-check me-2"></i>VitaWork Dashboard
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+        <div class="dropdown me-3">
+            <a href="#" class="position-relative" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bell fs-5"></i>
+            <span class="notification-badge badge rounded-pill">3</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+            <li><h6 class="dropdown-header">Notificaciones</h6></li>
+            <li><a class="dropdown-item" href="#">Nueva pausa activa disponible</a></li>
+            <li><a class="dropdown-item" href="#">Has ganado 50 puntos</a></li>
+            <li><a class="dropdown-item" href="#">Recordatorio: Revisa tu postura</a></li>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://ui-avatars.com/api/?name=Usuario&background=random" alt="User" class="user-avatar">
+            <span class="ms-2 d-none d-lg-inline" id="navbar-username">Usuario</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Perfil</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configuración</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" id="logout-btn"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
+            </ul>
+        </div>
+        </div>
+    </div>
+    </nav>
+
+    <div class="container-fluid">
+    <h1 class="dashboard-title">
+        <i class="bi bi-speedometer2"></i> Panel de Control
+    </h1>
+
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+            <h5 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>Estado Físico</h5>
+            </div>
+            <div class="card-body-custom">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                <span class="stat-number" id="pulse-rate">78</span>
+                <span class="stat-label">Ritmo Cardíaco (bpm)</span>
+                </div>
+                <span class="pulse-status pulse-normal"></span>
+            </div>
+            <div class="progress progress-custom">
+                <div class="progress-bar" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small class="text-muted">Rango saludable: 60-100 bpm</small>
+            <button class="btn btn-custom w-100 mt-3" onclick="alertaPulso()">Ver detalles</button>
+            </div>
+        </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Pausas Activas</h5>
+            </div>
+            <div class="card-body-custom">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                <span class="stat-number" id="active-breaks">3/5</span>
+                <span class="stat-label">Pausas hoy</span>
+                </div>
+                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+            </div>
+            <div class="progress progress-custom">
+                <div class="progress-bar" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small class="text-muted">Última pausa: <span id="last-break">Hace 1h 15m</span></small>
+            <button class="btn btn-custom w-100 mt-3" onclick="sugerirPausa()">Iniciar pausa</button>
+            </div>
+        </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+            <h5 class="mb-0"><i class="bi bi-stars me-2"></i>Gamificación</h5>
+            </div>
+            <div class="card-body-custom">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                <span class="stat-number" id="gamification-points">240</span>
+                <span class="stat-label">Puntos acumulados</span>
+                </div>
+                <i class="bi bi-trophy-fill text-warning fs-4"></i>
+            </div>
+            <div class="progress progress-custom">
+                <div class="progress-bar" role="progressbar" style="width: 24%;" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small class="text-muted">Próximo premio: 300 puntos</small>
+            <button class="btn btn-custom w-100 mt-3" onclick="verPremios()">Ver premios</button>
+            </div>
+        </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+            <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Alertas</h5>
+            </div>
+            <div class="card-body-custom">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                <span class="stat-number">2</span>
+                <span class="stat-label">Alertas recientes</span>
+                </div>
+                <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
+            </div>
+            <div class="alert alert-warning p-2 mb-2">
+                <small><i class="bi bi-exclamation-circle me-1"></i> Estrés elevado detectado</small>
+            </div>
+            <div class="alert alert-info p-2">
+                <small><i class="bi bi-info-circle me-1"></i> Postura incorrecta</small>
+            </div>
+            <button class="btn btn-custom w-100 mt-2" onclick="verAlertas()">Ver todas</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card card-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Actividad Semanal</h5>
+                    <div>
+                        <select class="form-select form-select-sm" style="width: 150px;">
+                            <option>Esta semana</option>
+                            <option>Semana pasada</option>
+                            <option>Este mes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body-custom">
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Actividad Reciente</h5>
+                </div>
+                <div class="card-body-custom">
+                    <div class="activity-item">
+                        <div class="activity-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h6 class="mb-0">Monitoreo de salud</h6>
+                            <small class="text-muted">Ritmo cardíaco normal</small>
+                        </div>
+                        <div class="activity-time">10:45 AM</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h6 class="mb-0">Pausa activa</h6>
+                            <small class="text-muted">Estiramientos completados</small>
+                        </div>
+                        <div class="activity-time">9:30 AM</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h6 class="mb-0">Alerta de postura</h6>
+                            <small class="text-muted">Corrige tu posición</small>
+                        </div>
+                        <div class="activity-time">8:15 AM</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h6 class="mb-0">Puntos ganados</h6>
+                            <small class="text-muted">+20 por pausa activa</small>
+                        </div>
+                        <div class="activity-time">Ayer</div>
+                    </div>
+                    <button class="btn btn-custom w-100 mt-2">Ver toda la actividad</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="bi bi-person-standing me-2"></i>Monitoreo de Postura</h5>
+                </div>
+                <div class="card-body-custom">
+                    <div class="text-center mb-4">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3048/3048127.png" alt="Posture" style="width: 120px;">
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="d-flex align-items-center">
+                                <span class="posture-indicator posture-good"></span>
+                                <span>Tiempo con buena postura</span>
+                            </span>
+                        </div>
+                        <span class="fw-bold">65%</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%;"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="d-flex align-items-center">
+                                <span class="posture-indicator posture-fair"></span>
+                                <span>Tiempo con postura regular</span>
+                            </span>
+                        </div>
+                        <span class="fw-bold">25%</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 25%;"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="d-flex align-items-center">
+                                <span class="posture-indicator posture-poor"></span>
+                                <span>Tiempo con mala postura</span>
+                            </span>
+                        </div>
+                        <span class="fw-bold">10%</span>
+                    </div>
+                    <div class="progress mb-4" style="height: 8px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 10%;"></div>
+                    </div>
+                    
+                    <button class="btn btn-custom w-100" onclick="mostrarConsejosPostura()">Consejos para mejorar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card card-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Tabla de Posiciones</h5>
+                    <span class="badge bg-primary">Esta semana</span>
+                </div>
+                <div class="card-body-custom">
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">1</div>
+                        <img src="https://ui-avatars.com/api/?name=Juan+Perez&background=random" class="leaderboard-avatar">
+                        <div>
+                            <h6 class="mb-0">Juan Perez</h6>
+                            <small class="text-muted">Departamento IT</small>
+                        </div>
+                        <div class="leaderboard-points">450</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">2</div>
+                        <img src="https://ui-avatars.com/api/?name=Maria+Gomez&background=random" class="leaderboard-avatar">
+                        <div>
+                            <h6 class="mb-0">Maria Gomez</h6>
+                            <small class="text-muted">Recursos Humanos</small>
+                        </div>
+                        <div class="leaderboard-points">380</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">3</div>
+                        <img src="https://ui-avatars.com/api/?name=Carlos+Rojas&background=random" class="leaderboard-avatar">
+                        <div>
+                            <h6 class="mb-0">Carlos Rojas</h6>
+                            <small class="text-muted">Ventas</small>
+                        </div>
+                        <div class="leaderboard-points">320</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">4</div>
+                        <img src="https://ui-avatars.com/api/?name=Usuario&background=random" class="leaderboard-avatar">
+                        <div>
+                            <h6 class="mb-0">Usuario</h6>
+                            <small class="text-muted">Operaciones</small>
+                        </div>
+                        <div class="leaderboard-points">240</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">5</div>
+                        <img src="https://ui-avatars.com/api/?name=Laura+Diaz&background=random" class="leaderboard-avatar">
+                        <div>
+                            <h6 class="mb-0">Laura Diaz</h6>
+                            <small class="text-muted">Marketing</small>
+                        </div>
+                        <div class="leaderboard-points">210</div>
+                    </div>
+                    <button class="btn btn-custom w-100 mt-3" onclick="verTablaCompleta()">Ver tabla completa</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Consejos de Bienestar</h5>
+                </div>
+                <div class="card-body-custom">
+                    <div class="alert alert-primary d-flex align-items-start">
+                        <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+                        <div>
+                            <h6>Hidratación</h6>
+                            <small>Recuerda tomar al menos 250ml de agua cada hora para mantenerte hidratado.</small>
+                        </div>
+                    </div>
+                    <div class="alert alert-success d-flex align-items-start">
+                        <i class="bi bi-check-circle-fill me-2 mt-1"></i>
+                        <div>
+                            <h6>Postura correcta</h6>
+                            <small>Mantén la espalda recta y los pies apoyados en el suelo mientras trabajas.</small>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning d-flex align-items-start">
+                        <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+                        <div>
+                            <h6>Descanso visual</h6>
+                            <small>Cada 20 minutos, mira un objeto a 6 metros de distancia durante 20 segundos.</small>
+                        </div>
+                    </div>
+                    <div class="alert alert-info d-flex align-items-start">
+                        <i class="bi bi-lightning-charge-fill me-2 mt-1"></i>
+                        <div>
+                            <h6>Pausa activa</h6>
+                            <small>Realiza estiramientos de cuello y hombros cada 2 horas para evitar tensiones.</small>
+                        </div>
+                    </div>
+                    <div class="alert alert-secondary d-flex align-items-start">
+                        <i class="bi bi-emoji-smile-fill me-2 mt-1"></i>
+                        <div>
+                            <h6>Bienestar emocional</h6>
+                            <small>Practica respiraciones profundas cuando sientas estrés o ansiedad.</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-custom w-100 mt-2" onclick="mostrarMasConsejos()">Ver más consejos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Verificar si el usuario está logueado al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedUser = localStorage.getItem('currentUser');
+        if (!savedUser) {
+            // Redirigir al login si no hay usuario logueado
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const currentUser = JSON.parse(savedUser);
+        
+        // Mostrar información del usuario en la interfaz
+        document.getElementById('sidebar-username').textContent = currentUser.name;
+        document.getElementById('navbar-username').textContent = currentUser.name;
+        
+        // Asignar el rol adecuado
+        const roleNames = {
+            'admin': 'Administrador',
+            'safety': 'Seguridad Industrial',
+            'manager': 'Gerente',
+            'worker': 'Trabajador'
+        };
+        document.getElementById('sidebar-role').textContent = roleNames[currentUser.role] || 'Usuario';
+
+        // Mostrar elementos de admin si corresponde
+        if (currentUser.role === 'admin') {
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('d-none'));
+        }
+
+        // Inicializar gráficos y simulaciones
+        initActivityChart();
+        simulatePulseRate();
+    });
+
+    // Sidebar toggle
+    document.querySelector('.sidebar-toggle').addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.toggle('active');
+    });
+
+    // Botón de logout
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('currentUser');
+        window.location.href = 'index.html';
+    });
+
+    // Alert Functions
+    function alertaPulso() {
+        Swal.fire({
+            title: 'Estado Fisiológico',
+            html: `
+            <div class="text-center">
+                <div class="pulse-status pulse-normal mb-3" style="width: 30px; height: 30px;"></div>
+                <p>Tu ritmo cardíaco está dentro del rango saludable (78 bpm).</p>
+                <div class="progress mt-3" style="height: 10px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-muted">Rango óptimo: 60-100 bpm</small>
+            </div>
+            `,
+            icon: 'success'
+        });
+    }
+
+    function sugerirPausa() {
+        Swal.fire({
+            title: 'Pausa Activa Recomendada',
+            html: `
+            <div class="text-center">
+                <i class="bi bi-clock-history text-primary fs-1 mb-3"></i>
+                <p>Te recomendamos una pausa de 5 minutos para estirar y relajarte.</p>
+                <div class="mt-4">
+                <button class="btn btn-custom me-2" onclick="startBreakTimer()">Iniciar Pausa</button>
+                <button class="btn btn-outline-secondary" onclick="Swal.close()">Más tarde</button>
+                </div>
+            </div>
+            `,
+            showConfirmButton: false
+        });
+    }
+
+    function verPremios() {
+        Swal.fire({
+            title: 'Premios Disponibles',
+            html: `
+            <div class="text-start">
+                <div class="d-flex align-items-center mb-3">
+                <span class="badge bg-primary me-3">300 pts</span>
+                <div>
+                    <h6 class="mb-0">Día libre</h6>
+                    <small class="text-muted">Un día de descanso adicional</small>
+                </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                <span class="badge bg-primary me-3">500 pts</span>
+                <div>
+                    <h6 class="mb-0">Tarjeta regalo</h6>
+                    <small class="text-muted">$50 en tu tienda favorita</small>
+                </div>
+                </div>
+                <div class="d-flex align-items-center">
+                <span class="badge bg-primary me-3">1000 pts</span>
+                <div>
+                    <h6 class="mb-0">Viaje de fin de semana</h6>
+                    <small class="text-muted">Todo incluido para 2 personas</small>
+                </div>
+                </div>
+            </div>
+            `,
+            icon: 'info'
+        });
+    }
+
+    function verAlertas() {
+        Swal.fire({
+            title: 'Alertas Recientes',
+            html: `
+            <div class="text-start">
+                <div class="alert alert-warning p-3 mb-2">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>
+                    <h6 class="mb-1">Estrés elevado</h6>
+                    <small>Detectado hoy a las 10:45 AM</small>
+                    </div>
+                </div>
+                </div>
+                <div class="alert alert-info p-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <div>
+                    <h6 class="mb-1">Postura incorrecta</h6>
+                    <small>Detectado hoy a las 9:30 AM</small>
+                    </div>
+                </div>
+                </div>
+            </div>
+            `,
+            icon: 'warning'
+        });
+    }
+
+    function mostrarConsejosPostura() {
+        Swal.fire({
+            title: 'Consejos para Mejorar tu Postura',
+            html: `
+            <div class="text-start">
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-1-circle-fill text-primary me-2 mt-1"></i>
+                    <div>
+                        <h6 class="mb-1">Ajusta tu silla</h6>
+                        <p class="small">La altura debe permitir que tus pies descansen planos en el suelo con las rodillas en ángulo de 90°.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-2-circle-fill text-primary me-2 mt-1"></i>
+                    <div>
+                        <h6 class="mb-1">Posición del monitor</h6>
+                        <p class="small">La parte superior de la pantalla debe estar a la altura de tus ojos y a unos 50-70 cm de distancia.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-3-circle-fill text-primary me-2 mt-1"></i>
+                    <div>
+                        <h6 class="mb-1">Apoya la espalda</h6>
+                        <p class="small">Utiliza el respaldo de la silla completamente, manteniendo la curva natural de tu columna.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-4-circle-fill text-primary me-2 mt-1"></i>
+                    <div>
+                        <h6 class="mb-1">Posición de brazos</h6>
+                        <p class="small">Los codos deben estar cerca del cuerpo y formando un ángulo entre 90° y 120°.</p>
+                    </div>
+                </div>
+            </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Entendido'
+        });
+    }
+
+    function verTablaCompleta() {
+        Swal.fire({
+            title: 'Tabla de Posiciones Completa',
+            html: `
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Nombre</th>
+                            <th>Departamento</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Juan Perez</td>
+                            <td>IT</td>
+                            <td>450</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Maria Gomez</td>
+                            <td>Recursos Humanos</td>
+                            <td>380</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Carlos Rojas</td>
+                            <td>Ventas</td>
+                            <td>320</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Usuario</td>
+                            <td>Operaciones</td>
+                            <td>240</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>Laura Diaz</td>
+                            <td>Marketing</td>
+                            <td>210</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>Pedro Martinez</td>
+                            <td>Finanzas</td>
+                            <td>190</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>Ana Lopez</td>
+                            <td>Logística</td>
+                            <td>175</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            `,
+            width: 800,
+            icon: 'info',
+            confirmButtonText: 'Cerrar'
+        });
+    }
+
+    function mostrarMasConsejos() {
+        Swal.fire({
+            title: 'Más Consejos de Bienestar',
+            html: `
+            <div class="text-start">
+                <div class="alert alert-primary d-flex align-items-start">
+                    <i class="bi bi-arrow-repeat me-2 mt-1"></i>
+                    <div>
+                        <h6>Variación de tareas</h6>
+                        <small>Alterna entre diferentes tipos de tareas para evitar la fatiga por repetición.</small>
+                    </div>
+                </div>
+                <div class="alert alert-success d-flex align-items-start">
+                    <i class="bi bi-egg-fried me-2 mt-1"></i>
+                    <div>
+                        <h6>Alimentación saludable</h6>
+                        <small>Prefiere snacks saludables como frutas o frutos secos en lugar de comida procesada.</small>
+                    </div>
+                </div>
+                <div class="alert alert-warning d-flex align-items-start">
+                    <i class="bi bi-brightness-high me-2 mt-1"></i>
+                    <div>
+                        <h6>Iluminación adecuada</h6>
+                        <small>Asegúrate de tener buena iluminación para reducir la fatiga visual.</small>
+                    </div>
+                </div>
+                <div class="alert alert-info d-flex align-items-start">
+                    <i class="bi bi-people me-2 mt-1"></i>
+                    <div>
+                        <h6>Interacción social</h6>
+                        <small>Mantén comunicación con tus compañeros para mejorar el ambiente laboral.</small>
+                    </div>
+                </div>
+            </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Gracias'
+        });
+    }
+
+    // Initialize activity chart
+    function initActivityChart() {
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+            labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+            datasets: [
+                {
+                label: 'Pausas Activas',
+                data: [3, 5, 4, 6, 3, 0, 0],
+                borderColor: '#4361ee',
+                backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                tension: 0.3,
+                fill: true
+                },
+                {
+                label: 'Puntos Ganados',
+                data: [40, 60, 50, 70, 60, 0, 0],
+                borderColor: '#4cc9f0',
+                backgroundColor: 'rgba(76, 201, 240, 0.1)',
+                tension: 0.3,
+                fill: true
+                }
+            ]
+            },
+            options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                beginAtZero: true
+                }
+            }
+            }
+        });
+    }
+
+    // Simulate pulse rate changes
+    function simulatePulseRate() {
+        const pulseElement = document.getElementById('pulse-rate');
+        const pulseStatus = document.querySelector('.pulse-status');
+        
+        let pulse = 78;
+        let isNormal = true;
+        
+        setInterval(() => {
+            // Random small variation
+            pulse += Math.floor(Math.random() * 5) - 2;
+            
+            // Keep within realistic bounds
+            pulse = Math.max(60, Math.min(100, pulse));
+            
+            pulseElement.textContent = pulse;
+            
+            // Change status if needed
+            if (pulse > 90) {
+            if (isNormal) {
+                pulseStatus.classList.remove('pulse-normal');
+                pulseStatus.classList.add('pulse-warning');
+                showWarningPulseAlert();
+            }
+            isNormal = false;
+            } else if (pulse > 85) {
+            pulseStatus.classList.remove('pulse-normal', 'pulse-danger');
+            pulseStatus.classList.add('pulse-warning');
+            isNormal = false;
+            } else {
+            if (!isNormal) {
+                pulseStatus.classList.remove('pulse-warning', 'pulse-danger');
+                pulseStatus.classList.add('pulse-normal');
+            }
+            isNormal = true;
+            }
+        }, 5000);
+    }
+
+    function showWarningPulseAlert() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser.role === 'worker') {
+            Swal.fire({
+            title: 'Alerta de Ritmo Cardíaco',
+            text: 'Tu ritmo cardíaco está elevado. Considera tomar un descanso.',
+            icon: 'warning',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000
+            });
+        }
+    }
+
+    // Start break timer
+    function startBreakTimer() {
+        let timeLeft = 5 * 60; // 5 minutes in seconds
+        const timerInterval = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            Swal.update({
+            html: `
+                <div class="text-center">
+                <i class="bi bi-clock-history text-primary fs-1 mb-3"></i>
+                <h3>${minutes}:${seconds < 10 ? '0' + seconds : seconds}</h3>
+                <p>Pausa activa en progreso</p>
+                <div class="progress mt-3" style="height: 10px;">
+                    <div class="progress-bar bg-primary" role="progressbar" 
+                      style="width: ${100 - (timeLeft / (5*60) * 100)}%;" 
+                      aria-valuenow="${100 - (timeLeft / (5*60) * 100)}" 
+                    aria-valuemin="0" 
+                    aria-valuemax="100">
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger mt-3" onclick="clearInterval(${timerInterval}); Swal.close();">Cancelar</button>
+                </div>
+            `
+            });
+            
+            timeLeft--;
+            
+            if (timeLeft < 0) {
+            clearInterval(timerInterval);
+            Swal.fire({
+                title: 'Pausa completada!',
+                text: 'Has completado tu pausa activa. ¡Buen trabajo!',
+                icon: 'success'
+            });
+            
+              // Update breaks count
+            const breaksElement = document.getElementById('active-breaks');
+            const [current, total] = breaksElement.textContent.split('/').map(Number);
+            if (current < total) {
+                breaksElement.textContent = `${current + 1}/${total}`;
+            }
+            
+              // Update last break time
+            document.getElementById('last-break').textContent = 'Hace 0m';
+            }
+        }, 1000);
+    }
+</script>
+</body>
+</html>

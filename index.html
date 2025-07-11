@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SST - Gamificación</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" width="500px" type="image/png">
+    <style>
+        /* Variables de color */
+        :root {
+            --primary-color: #1a5276;
+            --secondary-color: #2980b9;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-blue: #e8f4fc;
+            --purple-color: #9b59b6;
+        }
+
+        /* Estilos generales */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 80px; /* Espacio para los iconos fijos */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            transition: all 0.3s;
+            z-index: 1000;
+            width: 80px;
+            left: 0;
+            top: 0;
+            overflow: hidden;
+        }
+
+        .sidebar:hover {
+            width: 250px;
+        }
+
+        .sidebar:hover .nav-link-text,
+        .sidebar:hover .logo-text,
+        .sidebar:hover .user-info {
+            opacity: 1;
+            height: auto;
+        }
+
+        .sidebar .nav-link-text,
+        .sidebar .logo-text,
+        .sidebar .user-info {
+            opacity: 0;
+            transition: opacity 0.2s;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            padding: 10px 15px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Contenido principal */
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 250px;
+        }
+
+        /* Tarjetas */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Estilos para métricas */
+        .metric-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .metric-card .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .metric-card .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .metric-card .metric-change {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .metric-card .positive {
+            color: var(--success-color);
+        }
+
+        .metric-card .negative {
+            color: var(--danger-color);
+        }
+
+        /* Badges y posiciones */
+        .badge-points {
+            background-color: var(--purple-color);
+            color: white;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .position-badge {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        .position-1 {
+            background-color: var(--warning-color);
+            color: #2c3e50;
+        }
+
+        .position-2 {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .position-3 {
+            background-color: #e67e22;
+            color: white;
+        }
+
+        .position-other {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+        }
+
+        /* Contenedores de gráficos */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        /* Resumen de empresa */
+        .company-summary {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .company-summary h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            margin-bottom: 15px;
+        }
+
+        .summary-item .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .summary-item .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* Barra de iconos inferiores */
+        .iconos-inferiores {
+            display: none; /* Oculto por defecto (se muestra solo en móviles) */
+            justify-content: space-around;
+            padding: 10px 0;
+            background-color: white;
+            border-top: 1px solid #e0e0e0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .iconos-inferiores .icono {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .iconos-inferiores .icono i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        /* Icono activo en la barra inferior */
+        .iconos-inferiores .icono.active {
+            background-color: var(--light-blue);
+        }
+
+        .iconos-inferiores .icono.active i {
+            color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        /* Botón para mostrar/ocultar sidebar en móviles */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1100;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+        }
+
+        /* Ajustes responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-80px);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metric-card .metric-value {
+                font-size: 1.8rem;
+            }
+            
+            .chart-container {
+                height: 200px;
+            }
+            
+            .company-summary .value {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .d-flex.justify-content-between {
+                flex-direction: column;
+            }
+            
+            .btn-toolbar {
+                margin-top: 10px;
+            }
+            
+            .card-header.d-flex {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .btn-group.btn-group-sm {
+                margin-top: 10px;
+                align-self: flex-start;
+            }
+            
+            .iconos-inferiores {
+                display: flex;
+            }
+            
+            .iconos-inferiores .icono span {
+                display: none;
+            }
+            
+            .iconos-inferiores .icono i {
+                font-size: 1.8rem;
+                margin-bottom: 0;
+            }
+        }
+
+        /* Ajustes para tablets */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .iconos-inferiores .icono span {
+                font-size: 0.7rem;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón para mostrar/ocultar sidebar en móviles -->
+    <!-- <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button> -->
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="text-center mb-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" alt="Logo" class="rounded-circle mb-2" style="width: 50px; height: 50px">
+                    <h5 class="text-white logo-text">Dashboard SST</h5>
+                </div>
+                
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="./index.html">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="nav-link-text">Seguridad y Salud</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./accidentes.html">
+                            <i class="fas fa-ambulance"></i>
+                            <span class="nav-link-text">Incidentes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./pausas-activas.html">
+                            <i class="fas fa-clock"></i>
+                            <span class="nav-link-text">Pausas Activas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reportes.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span class="nav-link-text">Reportes</span>
+                        </a>
+                    </li>
+                   
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-link-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+                
+               
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto main-content" id="mainContent">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Gamificación SST</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Hoy</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Semanal</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary active">Mensual</button>
+                        </div>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-download me-1"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Resumen de la empresa -->
+                <div class="company-summary">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3><i class="fas fa-building me-2"></i>Resumen de la empresa</h3>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="summary-item">
+                                <div class="value">142</div>
+                                <div class="label">Trabajadores activos</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="summary-item">
+                                <div class="value">78%</div>
+                                <div class="label">Participación en SST</div>
+                                <small class="text-muted">participación activa</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="summary-item">
+                                <div class="value">3.4</div>
+                                <div class="label">Estrés promedio</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="summary-item">
+                                <div class="value">4.2</div>
+                                <div class="label">Pausas activas/semana</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Indicadores clave -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Total de incidentes</div>
+                            <div class="metric-value text-danger">2</div>
+                            <div class="metric-change negative"><i class="fas fa-arrow-down"></i> 33% vs mes anterior</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Total de accidentes</div>
+                            <div class="metric-value text-warning">1</div>
+                            <div class="metric-change positive"><i class="fas fa-arrow-up"></i> 0% vs mes anterior</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Sin pausas activas</div>
+                            <div class="metric-value text-primary">18</div>
+                            <div class="metric-change negative"><i class="fas fa-arrow-up"></i> 5% vs mes anterior</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Personal total</div>
+                            <div class="metric-value text-success">142</div>
+                            <div class="metric-change positive"><i class="fas fa-arrow-up"></i> 3% vs mes anterior</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas principales -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Premios entregados</div>
+                            <div class="metric-value" style="color: var(--purple-color);">24</div>
+                            <div class="metric-change positive"><i class="fas fa-arrow-up"></i> +5% vs mes anterior</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Puntos promedio</div>
+                            <div class="metric-value" style="color: var(--success-color);">142</div>
+                            <div class="metric-change positive"><i class="fas fa-arrow-up"></i> +15% vs mes anterior</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Participación</div>
+                            <div class="metric-value" style="color: var(--warning-color);">87%</div>
+                            <div class="metric-label">124 de 142 empleados</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <div class="metric-card">
+                            <div class="metric-label">Reducción incidentes</div>
+                            <div class="metric-value" style="color: var(--danger-color);">12%</div>
+                            <div class="metric-label">Desde implementación</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gráficos y métricas -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Distribución por género
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="generoChart"></canvas>
+                                </div>
+                                <div class="row text-center mt-3">
+                                    <div class="col-6">
+                                        <h4>85</h4>
+                                        <small class="text-muted">Hombres</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4>57</h4>
+                                        <small class="text-muted">Mujeres</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Distribución por edad
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="edadChart"></canvas>
+                                </div>
+                                <div class="row text-center mt-3">
+                                    <div class="col-4">
+                                        <h4>32</h4>
+                                        <small class="text-muted">18-25</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h4>68</h4>
+                                        <small class="text-muted">26-40</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h4>42</h4>
+                                        <small class="text-muted">40+</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Segundo grupo de gráficos -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Participación por departamento
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="departamentoChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Evolución mensual de participación
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="participacionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de iconos inferiores (solo para móviles) -->
+    <div class="iconos-inferiores d-lg-none">
+        <a href="index.html" class="icono active">
+            <i class="fas fa-shield-alt"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="accidentes.html" class="icono">
+            <i class="fas fa-ambulance"></i>
+            <span>Incidentes</span>
+        </a>
+        <a href="./pausas-activas.html" class="icono">
+            <i class="fas fa-clock"></i>
+            <span>Pausas</span>
+        </a>
+       <a href="./reportes.html" class="icono ">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reportes</span>
+            </a>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gráfico de distribución por género
+            const generoCtx = document.getElementById('generoChart').getContext('2d');
+            const generoChart = new Chart(generoCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hombres', 'Mujeres'],
+                    datasets: [{
+                        data: [85, 57],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(155, 89, 182, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(155, 89, 182, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+            
+            // Gráfico de distribución por edad
+            const edadCtx = document.getElementById('edadChart').getContext('2d');
+            const edadChart = new Chart(edadCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['18-25 años', '26-40 años', '40+ años'],
+                    datasets: [{
+                        data: [32, 68, 42],
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(243, 156, 18, 0.7)',
+                            'rgba(231, 76, 60, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(243, 156, 18, 1)',
+                            'rgba(231, 76, 60, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de participación por departamento
+            const departamentoCtx = document.getElementById('departamentoChart').getContext('2d');
+            const departamentoChart = new Chart(departamentoCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Producción', 'Almacén', 'Oficinas', 'Mantenimiento', 'Logística', 'RH'],
+                    datasets: [{
+                        label: '% Participación',
+                        data: [92, 85, 78, 82, 75, 88],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(243, 156, 18, 0.7)',
+                            'rgba(231, 76, 60, 0.7)',
+                            'rgba(155, 89, 182, 0.7)',
+                            'rgba(26, 188, 156, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(243, 156, 18, 1)',
+                            'rgba(231, 76, 60, 1)',
+                            'rgba(155, 89, 182, 1)',
+                            'rgba(26, 188, 156, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de participación
+            const participacionCtx = document.getElementById('participacionChart').getContext('2d');
+            const participacionChart = new Chart(participacionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: '% Participación',
+                        data: [65, 72, 78, 80, 82, 85, 87],
+                        borderColor: '#9b59b6',
+                        backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Toggle del sidebar en móviles
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+            
+            // Cerrar sidebar al hacer clic fuera de él en móviles
+            document.addEventListener('click', function(event) {
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isClickOnMenuToggle = menuToggle.contains(event.target);
+                
+                if (!isClickInsideSidebar && !isClickOnMenuToggle && window.innerWidth < 992) {
+                    sidebar.classList.remove('active');
+                }
+            });
+
+            // Manejar clics en los iconos inferiores
+            document.querySelectorAll('.iconos-inferiores .icono').forEach(icono => {
+                icono.addEventListener('click', function() {
+                    // Remover clase active de todos los iconos
+                    document.querySelectorAll('.iconos-inferiores .icono').forEach(i => {
+                        i.classList.remove('active');
+                    });
+
+                    // Agregar clase active al icono clickeado
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SST - Gamificación</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" width="500px" type="image/png">
+    <style>
+        /* Variables de color */
+        :root {
+            --primary-color: #1a5276;
+            --secondary-color: #2980b9;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-blue: #e8f4fc;
+        }
+
+        /* Estilos generales */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 80px; /* Espacio para los iconos fijos */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            transition: all 0.3s;
+            z-index: 1000;
+            width: 80px;
+            left: 0;
+            top: 0;
+            overflow: hidden;
+        }
+
+        .sidebar:hover {
+            width: 250px;
+        }
+
+        .sidebar:hover .nav-link-text,
+        .sidebar:hover .logo-text,
+        .sidebar:hover .user-info {
+            opacity: 1;
+            height: auto;
+        }
+
+        .sidebar .nav-link-text,
+        .sidebar .logo-text,
+        .sidebar .user-info {
+            opacity: 0;
+            transition: opacity 0.2s;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            padding: 10px 15px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Contenido principal */
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 250px;
+        }
+
+        /* Tarjetas */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card.primary {
+            border-left-color: var(--primary-color);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .stat-card h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .progress-thin {
+            height: 6px;
+        }
+
+        .badge-alerta {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+
+        .position-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .position-1 { background-color: var(--warning-color); }
+        .position-2 { background-color: #95a5a6; }
+        .position-3 { background-color: #e67e22; }
+        .position-other { background-color: #bdc3c7; color: #34495e; }
+        
+        .badge-points {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .leaderboard-item {
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-item:hover {
+            background-color: #f8f9fa;
+            border-color: rgba(52, 152, 219, 0.3);
+        }
+
+        /* Barra de iconos inferiores */
+        .iconos-inferiores {
+            display: none; /* Oculto por defecto (se muestra solo en móviles) */
+            justify-content: space-around;
+            padding: 10px 0;
+            background-color: white;
+            border-top: 1px solid #e0e0e0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .iconos-inferiores .icono {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .iconos-inferiores .icono i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        /* Icono activo en la barra inferior */
+        .iconos-inferiores .icono.active {
+            background-color: var(--light-blue);
+        }
+
+        .iconos-inferiores .icono.active i {
+            color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        /* Ajustes responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-bottom: 20px;
+            }
+
+            .iconos-inferiores {
+                display: flex;
+            }
+
+            .iconos-inferiores .icono span {
+                display: none;
+            }
+
+            .iconos-inferiores .icono i {
+                font-size: 1.8rem;
+                margin-bottom: 0;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .stat-card h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Ajustes para tablets */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .iconos-inferiores .icono span {
+                font-size: 0.7rem;
+                display: block;
+            }
+        }
+
+        /* Ajustes de grid */
+        .row {
+            margin-right: 0;
+            margin-left: 0;
+        }
+
+        .col-md-4,
+        .col-6,
+        .col-lg-6 {
+            padding-right: 8px;
+            padding-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="text-center mb-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" alt="Logo" class="rounded-circle mb-2" style="width: 50px; height: 50px">
+                    <h5 class="text-white logo-text">Dashboard SST</h5>
+                </div>
+                
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index.html">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="nav-link-text">Seguridad y Salud</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./accidentes.html">
+                            <i class="fas fa-ambulance"></i>
+                            <span class="nav-link-text">Incidentes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./pausas-activas.html">
+                            <i class="fas fa-clock"></i>
+                            <span class="nav-link-text">Pausas Activas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reportes.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span class="nav-link-text">Reportes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="./gamificacion.html">
+                            <i class="fas fa-trophy"></i>
+                            <span class="nav-link-text">Gamificación</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./gamificacion.html">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-link-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="position-absolute bottom-0 start-0 p-3 w-100 user-info">
+                    <div class="d-flex align-items-center">
+                        <img src="https://via.placeholder.com/40" alt="Usuario" class="avatar me-2">
+                        <div>
+                            <small class="text-white-50">Conectado como</small>
+                            <h6 class="mb-0 text-white">Admin SST</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Gamificación SST</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Hoy</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Semanal</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary active">Mensual</button>
+                        </div>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-download me-1"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas principales -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card stat-card primary">
+                            <div class="icon text-primary">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <h2>24</h2>
+                            <p class="text-muted">Premios entregados</p>
+                            <div class="progress progress-thin">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">+5% vs mes anterior</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card stat-card success">
+                            <div class="icon text-success">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <h2>142</h2>
+                            <p class="text-muted">Puntos promedio</p>
+                            <div class="progress progress-thin">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 71%" aria-valuenow="71" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">+15% vs mes anterior</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card stat-card warning">
+                            <div class="icon text-warning">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <h2>87%</h2>
+                            <p class="text-muted">Participación</p>
+                            <div class="progress progress-thin">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 87%" aria-valuenow="87" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">124 de 142 empleados</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card stat-card danger">
+                            <div class="icon text-danger">
+                                <i class="fas fa-arrow-trend-down"></i>
+                            </div>
+                            <h2>12%</h2>
+                            <p class="text-muted">Reducción incidentes</p>
+                            <div class="progress progress-thin">
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: 12%" aria-valuenow="12" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">Desde implementación</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top empleados y logros -->
+                <div class="row mb-4">
+                    <div class="col-lg-8 col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Ranking de empleados</span>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary">General</button>
+                                    <button type="button" class="btn btn-outline-secondary active">Por área</button>
+                                    <button type="button" class="btn btn-outline-secondary">Por mes</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <!-- Primer puesto -->
+                                    <div class="list-group-item leaderboard-item mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="position-badge position-1 me-3">1</div>
+                                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Usuario" class="avatar me-3">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Ana López</h6>
+                                                <small class="text-muted">Producción</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge badge-points">350 pts</span>
+                                                <div class="progress progress-thin mt-1">
+                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 95%" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Segundo puesto -->
+                                    <div class="list-group-item leaderboard-item mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="position-badge position-2 me-3">2</div>
+                                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Usuario" class="avatar me-3">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Juan Pérez</h6>
+                                                <small class="text-muted">Almacén</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge badge-points">320 pts</span>
+                                                <div class="progress progress-thin mt-1">
+                                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Tercer puesto -->
+                                    <div class="list-group-item leaderboard-item mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="position-badge position-3 me-3">3</div>
+                                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Usuario" class="avatar me-3">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">María Gómez</h6>
+                                                <small class="text-muted">Oficinas</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge badge-points">290 pts</span>
+                                                <div class="progress progress-thin mt-1">
+                                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Otros puestos -->
+                                    <div class="list-group-item leaderboard-item mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="position-badge position-other me-3">4</div>
+                                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Usuario" class="avatar me-3">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Carlos Ruiz</h6>
+                                                <small class="text-muted">Mantenimiento</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge badge-points">275 pts</span>
+                                                <div class="progress progress-thin mt-1">
+                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 73%" aria-valuenow="73" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item leaderboard-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="position-badge position-other me-3">5</div>
+                                            <img src="https://randomuser.me/api/portraits/women/25.jpg" alt="Usuario" class="avatar me-3">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Laura Díaz</h6>
+                                                <small class="text-muted">Logística</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge badge-points">260 pts</span>
+                                                <div class="progress progress-thin mt-1">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-primary w-100 mt-3">
+                                    Ver ranking completo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-12">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                Logros recientes
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 text-warning">
+                                                <i class="fas fa-trophy fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Seguridad impecable</h6>
+                                                <small class="text-muted">Ana López - 50 pts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 text-secondary">
+                                                <i class="fas fa-medal fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Reporte perfecto</h6>
+                                                <small class="text-muted">Juan Pérez - 30 pts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 text-danger">
+                                                <i class="fas fa-star fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Pausas completas</h6>
+                                                <small class="text-muted">María Gómez - 25 pts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 text-primary">
+                                                <i class="fas fa-award fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Capacitación destacada</h6>
+                                                <small class="text-muted">Carlos Ruiz - 20 pts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 text-success">
+                                                <i class="fas fa-certificate fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Sugerencia implementada</h6>
+                                                <small class="text-muted">Laura Díaz - 15 pts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary w-100 mt-3">
+                                    <i class="fas fa-gift me-1"></i> Asignar premio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seguimiento individual/grupal -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <ul class="nav nav-tabs card-header-tabs">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-bs-toggle="tab" href="#individual">Seguimiento Individual</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#grupal">Seguimiento Grupal</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="individual">
+                                        <div class="d-flex align-items-center mb-3 p-3">
+                                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="rounded-circle me-3" alt="Empleado" style="width: 60px; height: 60px;">
+                                            <div>
+                                                <h5 class="mb-0">Ana Gómez</h5>
+                                                <p class="text-muted mb-0">Producción | ID: EMP-045</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row p-3">
+                                            <div class="col-md-6">
+                                                <h6><i class="fas fa-clock text-primary me-2"></i>Pausas Activas</h6>
+                                                <div class="mb-3">
+                                                    <small class="text-muted">Cumplimiento este mes</small>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>100%</span>
+                                                        <span>15/15 pausas</span>
+                                                    </div>
+                                                    <div class="progress progress-thin">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <small class="text-muted">Tiempo promedio</small>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>8.2 min</span>
+                                                        <span>+1.2 min vs promedio</span>
+                                                    </div>
+                                                    <div class="progress progress-thin">
+                                                        <div class="progress-bar bg-info" role="progressbar" style="width: 82%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <small class="text-muted">Tipos de pausas</small>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>Variedad: 4/5</span>
+                                                    </div>
+                                                    <div class="progress progress-thin">
+                                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 80%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6><i class="fas fa-shield-alt text-warning me-2"></i>Cumplimiento SST</h6>
+                                                <div class="mb-3">
+                                                    <small class="text-muted">Uso de EPP</small>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>95%</span>
+                                                        <span>19/20 días</span>
+                                                    </div>
+                                                    <div class="progress progress-thin">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 95%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <small class="text-muted">Capacitaciones</small>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>100%</span>
+                                                        <span>5/5 completadas</span>
+                                                    </div>
+                                                    <div class="progress progress-thin">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <small class="text-muted">Reportes SST</small>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>80%</span>
+                                                        <span>4/5 reportes</span>
+                                                    </div>
+                                                    <div class="progress progress-thin">
+                                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 80%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between p-3 border-top">
+                                            <button class="btn btn-outline-secondary">
+                                                <i class="fas fa-chevron-left me-1"></i> Anterior
+                                            </button>
+                                            <button class="btn btn-primary">
+                                                Ver detalle completo
+                                            </button>
+                                            <button class="btn btn-outline-secondary">
+                                                Siguiente <i class="fas fa-chevron-right ms-1"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="grupal">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Área/Equipo</th>
+                                                        <th>Pausas Activas</th>
+                                                        <th>Cumplimiento SST</th>
+                                                        <th>EPP</th>
+                                                        <th>Incidentes</th>
+                                                        <th>Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Producción</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+                                                                </div>
+                                                                <span>85%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 75%"></div>
+                                                                </div>
+                                                                <span>75%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 90%"></div>
+                                                                </div>
+                                                                <span>90%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>2</td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Almacén</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 80%"></div>
+                                                                </div>
+                                                                <span>80%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 70%"></div>
+                                                                </div>
+                                                                <span>70%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 95%"></div>
+                                                                </div>
+                                                                <span>95%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>1</td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Oficinas</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 91%"></div>
+                                                                </div>
+                                                                <span>91%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 88%"></div>
+                                                                </div>
+                                                                <span>88%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 98%"></div>
+                                                                </div>
+                                                                <span>98%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>0</td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Mantenimiento</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+                                                                </div>
+                                                                <span>85%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 72%"></div>
+                                                                </div>
+                                                                <span>72%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress progress-thin flex-grow-1 me-2" style="width: 100px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 93%"></div>
+                                                                </div>
+                                                                <span>93%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>1</td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <button class="btn btn-outline-primary w-100 mt-2">Ver reporte completo por áreas</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gráficos de cumplimiento -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Evolución cumplimiento pausas</span>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary active">3M</button>
+                                    <button type="button" class="btn btn-outline-secondary">6M</button>
+                                    <button type="button" class="btn btn-outline-secondary">12M</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="evolucionPausasChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Cumplimiento SST por áreas
+                            </div>
+                            <div class="card-body">
+                                <canvas id="sstAreasChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Registro detallado -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Registro detallado de cumplimiento</span>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary active">Pausas</button>
+                            <button type="button" class="btn btn-outline-secondary">SST</button>
+                            <button type="button" class="btn btn-outline-secondary">EPP</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Empleado</th>
+                                        <th>Área</th>
+                                        <th>Tipo</th>
+                                        <th>Indicador</th>
+                                        <th>Valor</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>05/07/2023</td>
+                                        <td>Ana Gómez</td>
+                                        <td>Producción</td>
+                                        <td>Pausa activa</td>
+                                        <td>Estiramientos</td>
+                                        <td>8 min</td>
+                                        <td><span class="badge bg-success">Completo</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>05/07/2023</td>
+                                        <td>Carlos Ruiz</td>
+                                        <td>Almacén</td>
+                                        <td>EPP</td>
+                                        <td>Uso de casco</td>
+                                        <td>Sí</td>
+                                        <td><span class="badge bg-success">Cumple</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>04/07/2023</td>
+                                        <td>María López</td>
+                                        <td>Oficinas</td>
+                                        <td>Capacitación</td>
+                                        <td>Ergonomía</td>
+                                        <td>Completada</td>
+                                        <td><span class="badge bg-success">Aprobada</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>04/07/2023</td>
+                                        <td>Juan Pérez</td>
+                                        <td>Mantenimiento</td>
+                                        <td>Pausa activa</td>
+                                        <td>Respiración</td>
+                                        <td>5 min</td>
+                                        <td><span class="badge bg-warning">Parcial</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>03/07/2023</td>
+                                        <td>Laura Martínez</td>
+                                        <td>Producción</td>
+                                        <td>EPP</td>
+                                        <td>Guantes</td>
+                                        <td>No</td>
+                                        <td><span class="badge bg-danger">Incumple</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>03/07/2023</td>
+                                        <td>Pedro Sánchez</td>
+                                        <td>Logística</td>
+                                        <td>Pausa activa</td>
+                                        <td>Ojos</td>
+                                        <td>-</td>
+                                        <td><span class="badge bg-danger">No realizada</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Detalles</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Page navigation" class="mt-3">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Siguiente</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Barra de iconos inferiores (solo para móviles) -->
+        <div class="iconos-inferiores d-lg-none">
+            <a href="index.html" class="icono">
+               <i class="fas fa-shield-alt"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="accidentes.html" class="icono">
+                <i class="fas fa-ambulance"></i>
+                <span>Incidentes</span>
+            </a>
+            <a href="./pausas-activas.html" class="icono active">
+                <i class="fas fa-clock"></i>
+                <span>Pausas</span>
+            </a>
+            <a href="./reportes.html" class="icono ">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reportes</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Gráfico de evolución de pausas
+        document.addEventListener('DOMContentLoaded', function() {
+            const evolucionPausasCtx = document.getElementById('evolucionPausasChart').getContext('2d');
+            const evolucionPausasChart = new Chart(evolucionPausasCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Abr', 'May', 'Jun', 'Jul'],
+                    datasets: [
+                        {
+                            label: 'Pausas activas',
+                            data: [75, 82, 85, 87],
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Cumplimiento SST',
+                            data: [70, 73, 76, 78],
+                            borderColor: '#f39c12',
+                            backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de cumplimiento SST por áreas
+            const sstAreasCtx = document.getElementById('sstAreasChart').getContext('2d');
+            const sstAreasChart = new Chart(sstAreasCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Producción', 'Almacén', 'Oficinas', 'Mantenimiento', 'Logística'],
+                    datasets: [
+                        {
+                            label: 'Cumplimiento SST',
+                            data: [75, 70, 88, 72, 80],
+                            backgroundColor: '#f39c12'
+                        },
+                        {
+                            label: 'Pausas activas',
+                            data: [85, 80, 91, 85, 78],
+                            backgroundColor: '#3498db'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Manejar clics en los iconos inferiores
+            document.querySelectorAll('.iconos-inferiores .icono').forEach(icono => {
+                icono.addEventListener('click', function() {
+                    // Remover clase active de todos los iconos
+                    document.querySelectorAll('.iconos-inferiores .icono').forEach(i => {
+                        i.classList.remove('active');
+                    });
+
+                    // Agregar clase active al icono clickeado
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

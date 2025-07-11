@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SST - Incidentes y Planes</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" width="500px" type="image/png">
+    <style>
+        /* Variables de color */
+        :root {
+            --primary-color: #1a5276;
+            --secondary-color: #2980b9;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-blue: #e8f4fc;
+        }
+
+        /* Estilos generales */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 80px; /* Espacio para los iconos fijos */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            transition: all 0.3s;
+            z-index: 1000;
+            width: 80px;
+            left: 0;
+            top: 0;
+            overflow: hidden;
+        }
+
+        .sidebar:hover {
+            width: 250px;
+        }
+
+        .sidebar:hover .nav-link-text,
+        .sidebar:hover .logo-text,
+        .sidebar:hover .user-info {
+            opacity: 1;
+            height: auto;
+        }
+
+        .sidebar .nav-link-text,
+        .sidebar .logo-text,
+        .sidebar .user-info {
+            opacity: 0;
+            transition: opacity 0.2s;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            padding: 10px 15px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Contenido principal */
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-left: 250px;
+        }
+
+        /* Tarjetas */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .incident-card {
+            transition: all 0.2s;
+            border-left: 4px solid;
+        }
+
+        .incident-card.critical {
+            border-left-color: var(--danger-color);
+        }
+
+        .incident-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .incident-card.info {
+            border-left-color: var(--secondary-color);
+        }
+
+        .progress-thin {
+            height: 6px;
+        }
+
+        .badge-pill {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+
+        /* Barra de iconos inferiores */
+        .iconos-inferiores {
+            display: none; /* Oculto por defecto (se muestra solo en móviles) */
+            justify-content: space-around;
+            padding: 10px 0;
+            background-color: white;
+            border-top: 1px solid #e0e0e0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .iconos-inferiores .icono {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .iconos-inferiores .icono i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        /* Icono activo en la barra inferior */
+        .iconos-inferiores .icono.active {
+            background-color: var(--light-blue);
+        }
+
+        .iconos-inferiores .icono.active i {
+            color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        /* Ajustes responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-bottom: 20px;
+            }
+
+            .iconos-inferiores {
+                display: flex;
+            }
+
+            .iconos-inferiores .icono span {
+                display: none;
+            }
+
+            .iconos-inferiores .icono i {
+                font-size: 1.8rem;
+                margin-bottom: 0;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+        }
+
+        /* Ajustes para tablets */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .iconos-inferiores .icono span {
+                font-size: 0.7rem;
+                display: block;
+            }
+        }
+
+        /* Ajustes de grid */
+        .row {
+            margin-right: 0;
+            margin-left: 0;
+        }
+
+        .col-md-4,
+        .col-6,
+        .col-lg-6 {
+            padding-right: 8px;
+            padding-left: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="text-center mb-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" alt="Logo" class="rounded-circle mb-2" style="width: 50px; height: 50px">
+                    <h5 class="text-white logo-text">Dashboard SST</h5>
+                </div>
+
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index.html">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="nav-link-text">Seguridad y Salud</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="./accidentes.html">
+                            <i class="fas fa-ambulance"></i>
+                            <span class="nav-link-text">Incidentes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./pausas-activas.html">
+                            <i class="fas fa-clock"></i>
+                            <span class="nav-link-text">Pausas Activas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reportes.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span class="nav-link-text">Reportes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./gamificacion.html">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-link-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+
+              
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Gestión de Incidentes y Planes de Acción</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button class="btn btn-primary me-2">
+                            <i class="fas fa-plus me-1"></i> Nuevo incidente
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-download me-1"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Estadísticas de incidentes -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h3 class="text-danger">12</h3>
+                                <p class="text-muted">Incidentes este mes</p>
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 60%"
+                                        aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">+20% vs mes anterior</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h3 class="text-warning">5</h3>
+                                <p class="text-muted">Incidentes recurrentes</p>
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 42%"
+                                        aria-valuenow="42" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">42% del total</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h3 class="text-success">78%</h3>
+                                <p class="text-muted">Planes implementados</p>
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 78%"
+                                        aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">+15% vs trimestre anterior</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incidentes recurrentes y planes de acción -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Incidentes recurrentes</span>
+                                <button class="btn btn-sm btn-outline-primary">Ver todos</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action incident-card critical">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Falta de EPP</h6>
+                                            <span class="badge bg-danger rounded-pill">3 casos</span>
+                                        </div>
+                                        <p class="mb-1">Principalmente en área de producción</p>
+                                        <small>Último caso: 15/06/2023</small>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action incident-card warning">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Condiciones inseguras</h6>
+                                            <span class="badge bg-warning rounded-pill">2 casos</span>
+                                        </div>
+                                        <p class="mb-1">Pisos resbaladizos en almacén</p>
+                                        <small>Último caso: 02/06/2023</small>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action incident-card info">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Ergonomía inadecuada</h6>
+                                            <span class="badge bg-primary rounded-pill">2 casos</span>
+                                        </div>
+                                        <p class="mb-1">Posturas forzadas en oficinas</p>
+                                        <small>Último caso: 20/05/2023</small>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action incident-card warning">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Falta de señalización</h6>
+                                            <span class="badge bg-warning rounded-pill">1 caso</span>
+                                        </div>
+                                        <p class="mb-1">Áreas de riesgo no señalizadas</p>
+                                        <small>Último caso: 18/05/2023</small>
+                                    </a>
+                                </div>
+                                <button class="btn btn-outline-primary w-100 mt-3">Ver plan de acción</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                Plan de acción para: Falta de EPP
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6>Descripción del problema</h6>
+                                    <p class="text-muted">Empleados en área de producción no utilizan el equipo de
+                                        protección personal requerido, exponiéndose a riesgos innecesarios.</p>
+                                </div>
+
+                                <h6 class="mt-4">Acciones correctivas</h6>
+                                <div class="list-group mb-3">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Capacitación en uso de EPP
+                                        <span class="badge bg-success rounded-pill">Completado</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Revisión de inventario de EPP
+                                        <span class="badge bg-primary rounded-pill">En progreso</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Implementación de puntos de control
+                                        <span class="badge bg-warning rounded-pill">Pendiente</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6>Responsable</h6>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle me-2"
+                                            alt="Responsable">
+                                        <div>
+                                            <p class="mb-0">Juan Pérez</p>
+                                            <small class="text-muted">Supervisor de Producción</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6>Fecha límite</h6>
+                                    <p class="text-muted">30/06/2023</p>
+                                </div>
+
+                                <div class="progress progress-thin mb-3">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 45%"
+                                        aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">45% completado</small>
+
+                                <button class="btn btn-primary w-100 mt-3">Actualizar progreso</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos de tendencias -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Tendencias de incidentes
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <canvas id="tendenciasChart" height="250"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Falta de EPP
+                                        <span class="badge bg-danger rounded-pill">35%</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Condiciones inseguras
+                                        <span class="badge bg-warning rounded-pill">25%</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Ergonomía inadecuada
+                                        <span class="badge bg-primary rounded-pill">20%</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Falta de señalización
+                                        <span class="badge bg-info rounded-pill">12%</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Otros
+                                        <span class="badge bg-secondary rounded-pill">8%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registro completo de incidentes -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Registro completo de incidentes</span>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary active">Todos</button>
+                            <button type="button" class="btn btn-outline-secondary">Críticos</button>
+                            <button type="button" class="btn btn-outline-secondary">Recurrentes</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th>Área</th>
+                                        <th>Descripción</th>
+                                        <th>Gravedad</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>15/06/2023</td>
+                                        <td>Falta de EPP</td>
+                                        <td>Producción</td>
+                                        <td>Operario sin casco de seguridad</td>
+                                        <td><span class="badge bg-danger">Alto</span></td>
+                                        <td><span class="badge bg-warning">En investigación</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>02/06/2023</td>
+                                        <td>Condiciones inseguras</td>
+                                        <td>Almacén</td>
+                                        <td>Piso mojado sin señalización</td>
+                                        <td><span class="badge bg-warning">Medio</span></td>
+                                        <td><span class="badge bg-primary">En corrección</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>20/05/2023</td>
+                                        <td>Ergonomía inadecuada</td>
+                                        <td>Oficinas</td>
+                                        <td>Estación de trabajo mal configurada</td>
+                                        <td><span class="badge bg-primary">Bajo</span></td>
+                                        <td><span class="badge bg-success">Resuelto</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>18/05/2023</td>
+                                        <td>Falta de señalización</td>
+                                        <td>Producción</td>
+                                        <td>Área de maquinaria sin señalética</td>
+                                        <td><span class="badge bg-warning">Medio</span></td>
+                                        <td><span class="badge bg-success">Resuelto</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Page navigation" class="mt-3">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Siguiente</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Barra de iconos inferiores (solo para móviles) -->
+        <div class="iconos-inferiores d-lg-none">
+            <a href="index.html" class="icono">
+               <i class="fas fa-shield-alt"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="accidentes.html" class="icono active">
+                <i class="fas fa-ambulance"></i>
+                <span>Incidentes</span>
+            </a>
+            <a href="./pausas-activas.html" class="icono">
+                <i class="fas fa-clock"></i>
+                <span>Pausas</span>
+            </a>
+            <a href="./reportes.html" class="icono">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reportes</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Gráfico de tendencias de incidentes
+        document.addEventListener('DOMContentLoaded', function () {
+            const tendenciasCtx = document.getElementById('tendenciasChart').getContext('2d');
+            const tendenciasChart = new Chart(tendenciasCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Falta de EPP',
+                            data: [3, 2, 4, 3, 5, 3],
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Condiciones inseguras',
+                            data: [2, 1, 3, 2, 2, 2],
+                            borderColor: '#f39c12',
+                            backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Ergonomía inadecuada',
+                            data: [1, 2, 1, 1, 2, 2],
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+        // Manejar clics en los iconos inferiores
+        document.querySelectorAll('.iconos-inferiores .icono').forEach(icono => {
+            icono.addEventListener('click', function() {
+                // Remover clase active de todos los iconos
+                document.querySelectorAll('.iconos-inferiores .icono').forEach(i => {
+                    i.classList.remove('active');
+                });
+
+                // Agregar clase active al icono clickeado
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
