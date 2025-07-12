@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SST - Gamificación</title>
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" width="500px" type="image/png">
+</head>
+    <style>
+        /* Variables de color */
+        :root {
+            --primary-color: #1a5276;
+            --secondary-color: #2980b9;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-blue: #e8f4fc;
+        }
+        
+        /* Estilos generales */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 80px; /* Espacio para los iconos fijos */
+        }
+        
+        /* Sidebar */
+        .sidebar {
+           background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            transition: all 0.3s;
+            z-index: 1000;
+            width: 80px;
+            left: 0;
+            top: 0;
+            overflow: hidden;
+        }
+        
+        .sidebar:hover {
+            width: 250px;
+        }
+        
+        .sidebar:hover .nav-link-text,
+        .sidebar:hover .logo-text,
+        .sidebar:hover .user-info {
+            opacity: 1;
+            height: auto;
+        }
+        
+        .sidebar .nav-link-text,
+        .sidebar .logo-text,
+        .sidebar .user-info {
+            opacity: 0;
+            transition: opacity 0.2s;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            padding: 10px 15px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        /* Contenido principal */
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+        
+        .sidebar:hover ~ .main-content {
+            margin-left: 250px;
+        }
+        
+        /* Tarjetas */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .badge-points {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .progress-thin {
+            height: 6px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        /* Barra de iconos inferiores */
+        .iconos-inferiores {
+            display: none; /* Oculto por defecto (se muestra solo en móviles) */
+            justify-content: space-around;
+            padding: 10px 0;
+            background-color: white;
+            border-top: 1px solid #e0e0e0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .iconos-inferiores .icono {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .iconos-inferiores .icono i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+        
+        /* Icono activo en la barra inferior */
+        .iconos-inferiores .icono.active {
+            background-color: var(--light-blue);
+        }
+        
+        .iconos-inferiores .icono.active i {
+            color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+        
+        /* Ajustes responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding-bottom: 20px;
+            }
+            
+            .iconos-inferiores {
+                display: flex;
+            }
+            
+            .iconos-inferiores .icono span {
+                display: none;
+            }
+            
+            .iconos-inferiores .icono i {
+                font-size: 1.8rem;
+                margin-bottom: 0;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+        }
+        
+        /* Ajustes para tablets */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .iconos-inferiores .icono span {
+                font-size: 0.7rem;
+                display: block;
+            }
+        }
+        
+        /* Ajustes de grid */
+        .row {
+            margin-right: 0;
+            margin-left: 0;
+        }
+        
+        .col-md-4, .col-6, .col-lg-6 {
+            padding-right: 8px;
+            padding-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="text-center mb-4">
+            <img src="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" alt="Logo" class="rounded-circle mb-2" style="width: 50px; height: 50px" />
+            <h5 class="text-white logo-text">SafeWork</h5>
+        </div>
+
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="./Dasboard.html">
+                      <i class="fas fa-heartbeat"></i>
+                    <span class="nav-link-text">Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="perfil.html">
+                    <i class="fas fa-user"></i> 
+                       <span class="nav-link-text">Perfil</span>
+                </a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="./pausas.html">
+                    <i class="fas fa-coffee"></i>
+                    <span class="nav-link-text">Pausas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="gamificacion.html">
+                    <i class="fas fa-trophy"></i>
+                    <span class="nav-link-text">Gamificación</span>
+                </a>
+            </li>
+          <li class="nav-item">
+                <a class="nav-link" href="./index.html">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="nav-link-text">Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Gamificación</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <button class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <button class="btn btn-primary">
+                    <i class="fas fa-gift me-1"></i> Canjear puntos
+                </button>
+            </div>
+        </div>
+        
+        <!-- Pestañas Personal/Grupal -->
+        <ul class="nav nav-pills mb-4" id="gamificationTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="personal-tab" data-bs-toggle="pill" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">
+                    <i class="fas fa-user me-1"></i> Personal
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="grupal-tab" data-bs-toggle="pill" data-bs-target="#grupal" type="button" role="tab" aria-controls="grupal" aria-selected="false">
+                    <i class="fas fa-users me-1"></i> Grupal
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="gamificationTabsContent">
+            <!-- Contenido Personal -->
+            <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-coins text-warning mb-3" style="font-size: 2.5rem;"></i>
+                                <h5>Puntos acumulados</h5>
+                                <h2 class="text-warning my-3">1,250</h2>
+                                <div class="progress progress-thin mx-auto" style="width: 80%;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 62.5%;" aria-valuenow="62.5" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">62.5% hacia tu próximo nivel</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-trophy text-primary mb-3" style="font-size: 2.5rem;"></i>
+                                <h5>Nivel actual</h5>
+                                <h2 class="text-primary my-3">Plata</h2>
+                                <p class="text-muted">Siguiente nivel: Oro (2,000 pts)</p>
+                                <button class="btn btn-outline-primary">Ver beneficios</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-medal text-success mb-3" style="font-size: 2.5rem;"></i>
+                                <h5>Ranking</h5>
+                                <h2 class="text-success my-3">#8</h2>
+                                <p class="text-muted">Top 15% de la empresa</p>
+                                <button class="btn btn-outline-success">Ver ranking completo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Retos activos</span>
+                                <span class="badge bg-primary">3 disponibles</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Semana activa</h6>
+                                            <span class="badge bg-success">+50 pts</span>
+                                        </div>
+                                        <p class="mb-1">Completa 10 pausas activas esta semana</p>
+                                        <small class="text-muted">7/10 completadas</small>
+                                        <div class="progress progress-thin mt-2">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 70%;" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Metas de pasos</h6>
+                                            <span class="badge bg-primary">+100 pts</span>
+                                        </div>
+                                        <p class="mb-1">Acumula 50,000 pasos este mes</p>
+                                        <small class="text-muted">20,000/50,000 pasos</small>
+                                        <div class="progress progress-thin mt-2">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Consistencia</h6>
+                                            <span class="badge bg-info">+30 pts</span>
+                                        </div>
+                                        <p class="mb-1">Realiza pausas activas 5 días seguidos</p>
+                                        <small class="text-muted">1/5 días completados</small>
+                                        <div class="progress progress-thin mt-2">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-primary mt-3 w-100">Ver todos los retos</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Recompensas disponibles</span>
+                                <span class="badge bg-warning">1,250 pts</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Día libre</h6>
+                                                <p class="card-text text-muted small">Canjea un día libre pagado</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">2,500 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary">Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Gift card $100</h6>
+                                                <p class="card-text text-muted small">Amazon, MercadoLibre o similares</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">1,800 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary">Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Almuerzo ejecutivo</h6>
+                                                <p class="card-text text-muted small">Para ti y un acompañante</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">1,200 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary" disabled>Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Entrada al cine</h6>
+                                                <p class="card-text text-muted small">Para 2 personas</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">800 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary">Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-primary w-100">Ver todas las recompensas</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenido Grupal -->
+            <div class="tab-pane fade" id="grupal" role="tabpanel" aria-labelledby="grupal-tab">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-coins text-warning mb-3" style="font-size: 2.5rem;"></i>
+                                <h5>Puntos del grupo</h5>
+                                <h2 class="text-warning my-3">8,750</h2>
+                                <p class="text-muted">Equipo: Seguridad Industrial</p>
+                                <div class="progress progress-thin mx-auto" style="width: 80%;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 58%;" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">58% hacia la siguiente meta grupal</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-trophy text-primary mb-3" style="font-size: 2.5rem;"></i>
+                                <h5>Nivel del grupo</h5>
+                                <h2 class="text-primary my-3">Bronce</h2>
+                                <p class="text-muted">Siguiente nivel: Plata (15,000 pts)</p>
+                                <button class="btn btn-outline-primary">Ver beneficios grupales</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-medal text-success mb-3" style="font-size: 2.5rem;"></i>
+                                <h5>Ranking grupal</h5>
+                                <h2 class="text-success my-3">#3</h2>
+                                <p class="text-muted">Top 10% de la empresa</p>
+                                <button class="btn btn-outline-success">Ver ranking de equipos</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Miembros del equipo
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/40" class="avatar me-3" alt="Usuario">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">Juan Pérez</h6>
+                                            <small class="text-muted">Líder del equipo</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary">1,850 pts</span>
+                                            <div class="text-muted small">#5 en ranking</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/40" class="avatar me-3" alt="Usuario">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">María González</h6>
+                                            <small class="text-muted">Especialista SST</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary">1,600 pts</span>
+                                            <div class="text-muted small">#7 en ranking</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/40" class="avatar me-3" alt="Usuario">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">Carlos Rojas</h6>
+                                            <small class="text-muted">Técnico</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary">1,250 pts</span>
+                                            <div class="text-muted small">#8 en ranking</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/40" class="avatar me-3" alt="Usuario">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">Ana Mendoza</h6>
+                                            <small class="text-muted">Analista</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary">1,100 pts</span>
+                                            <div class="text-muted small">#12 en ranking</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/40" class="avatar me-3" alt="Usuario">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">Luis Torres</h6>
+                                            <small class="text-muted">Inspector</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary">950 pts</span>
+                                            <div class="text-muted small">#15 en ranking</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-primary mt-3 w-100">Ver todos los miembros</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Recompensas grupales</span>
+                                <span class="badge bg-warning">8,750 pts</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Almuerzo grupal</h6>
+                                                <p class="card-text text-muted small">Para todo el equipo</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">10,000 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary" disabled>Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Día de campo</h6>
+                                                <p class="card-text text-muted small">Actividad recreativa</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">15,000 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary" disabled>Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Capacitación VIP</h6>
+                                                <p class="card-text text-muted small">Con experto internacional</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">20,000 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary" disabled>Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100 reward-card">
+                                            <img src="https://via.placeholder.com/150x100" class="card-img-top" alt="Recompensa">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Bonificación grupal</h6>
+                                                <p class="card-text text-muted small">$500 por miembro</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge badge-points">25,000 pts</span>
+                                                    <button class="btn btn-sm btn-outline-primary" disabled>Canjear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-primary w-100">Ver todas las recompensas grupales</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de iconos inferiores (solo para móviles) -->
+    <div class="iconos-inferiores d-lg-none">
+        <a href="./Dasboard.html" class="icono">
+            <i class="fas fa-heartbeat"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="./perfil.html" class="icono">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+        <a href="./pausas.html" class="icono">
+            <i class="fas fa-coffee"></i>
+            <span>Salud</span>
+        </a>
+        <a href="gamificacion.html" class="icono active">
+            <i class="fas fa-trophy"></i>
+            <span>Gamificación</span>
+        </a>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Mostrar menú de admin si el usuario es administrador
+        const isAdmin = true; // Cambiar a false para vista de trabajador normal
+        if(isAdmin) {
+            document.getElementById('admin-menu').classList.remove('d-none');
+        }
+        
+        // Efecto hover para las tarjetas de recompensas
+        document.querySelectorAll('.reward-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Aquí podrías agregar lógica para mostrar detalles de la recompensa
+                console.log('Recompensa seleccionada:', this.querySelector('.card-title').textContent);
+            });
+        });
+        
+        // Manejar clics en los iconos inferiores
+        document.querySelectorAll('.iconos-inferiores .icono').forEach(icono => {
+            icono.addEventListener('click', function() {
+                // Remover clase active de todos los iconos
+                document.querySelectorAll('.iconos-inferiores .icono').forEach(i => {
+                    i.classList.remove('active');
+                });
+                
+                // Agregar clase active al icono clickeado
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

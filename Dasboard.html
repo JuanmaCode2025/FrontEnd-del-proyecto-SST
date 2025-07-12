@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeWork - Dashboard SST</title>
+
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" width="500px" type="image/png">
+</head>
+
+
+
+
+
+<style>
+    /* Variables de color */
+    :root {
+        --primary-color: #1a5276;
+        --secondary-color: #2980b9;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #3498db;
+        --light-blue: #e8f4fc;
+    }
+
+    /* Estilos generales */
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Roboto', sans-serif;
+        overflow-x: hidden;
+        padding-bottom: 80px;
+        /* Espacio para los iconos fijos */
+    }
+
+    /* Sidebar */
+    .sidebar {
+       background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+        color: white;
+        height: 100vh;
+        position: fixed;
+        padding-top: 20px;
+        transition: all 0.3s;
+        z-index: 1000;
+        width: 80px;
+        left: 0;
+        top: 0;
+        overflow: hidden;
+    }
+
+    .sidebar:hover {
+        width: 250px;
+    }
+
+    .sidebar:hover .nav-link-text,
+    .sidebar:hover .logo-text,
+    .sidebar:hover .user-info {
+        opacity: 1;
+        height: auto;
+    }
+
+    .sidebar .nav-link-text,
+    .sidebar .logo-text,
+    .sidebar .user-info {
+        opacity: 0;
+        transition: opacity 0.2s;
+        height: 0;
+        overflow: hidden;
+    }
+
+    .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 5px;
+        border-radius: 5px;
+        padding: 10px 15px;
+        white-space: nowrap;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+
+    .sidebar .nav-link i {
+        font-size: 1.2rem;
+        min-width: 24px;
+        text-align: center;
+    }
+
+    /* Contenido principal */
+    .main-content {
+        margin-left: 80px;
+        padding: 20px;
+        transition: margin-left 0.3s;
+    }
+
+    .sidebar:hover~.main-content {
+        margin-left: 250px;
+    }
+
+    /* Tarjetas */
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        border: none;
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    /* Métricas de salud */
+    .health-metric {
+        text-align: center;
+        padding: 15px;
+        background-color: var(--light-blue);
+        border-radius: 10px;
+    }
+
+    .health-metric .value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .health-metric .label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    .health-metric .trend {
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    /* Elementos UI */
+    .progress-thin {
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    /* Alertas */
+    .alert-wearable {
+        border-left: 4px solid var(--danger-color);
+        background-color: #fff8f8;
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Actividades */
+    .activity-item {
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+    }
+
+    .activity-item:hover {
+        background-color: #f8f9fa;
+        border-left: 3px solid var(--info-color);
+    }
+
+    .pausa-item {
+        position: relative;
+        padding-left: 15px;
+    }
+
+    .pausa-item:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 15px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--info-color);
+    }
+
+    /* Modal de alertas */
+    .alert-modal .modal-header {
+        background-color: var(--danger-color);
+        color: white;
+    }
+
+    .alert-modal .modal-body {
+        padding: 30px;
+    }
+
+    .alert-icon {
+        font-size: 3rem;
+        color: var(--danger-color);
+        margin-bottom: 20px;
+    }
+
+    /* Animaciones */
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .pulse {
+        animation: pulse 1.5s infinite;
+    }
+
+    /* Colores para métricas */
+    .heart-rate {
+        color: #e74c3c;
+    }
+
+    .steps {
+        color: #2ecc71;
+    }
+
+    .calories {
+        color: #f39c12;
+    }
+
+    .activity {
+        color: #3498db;
+    }
+
+    .oxygen {
+        color: #9b59b6;
+    }
+
+    .stress {
+        color: #d35400;
+    }
+
+    /* Barra de iconos inferiores */
+    .iconos-inferiores {
+        display: none;
+        /* Oculto por defecto (se muestra solo en móviles) */
+        justify-content: space-around;
+        padding: 10px 0;
+        background-color: white;
+        border-top: 1px solid #e0e0e0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .iconos-inferiores .icono {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.8rem;
+        padding: 5px 10px;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .iconos-inferiores .icono i {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        color: var(--primary-color);
+        transition: all 0.3s;
+    }
+
+    .iconos-inferiores .icono:first-child {
+        background-color: var(--light-blue);
+    }
+
+    .iconos-inferiores .icono:first-child {
+        color: var(--secondary-color);
+        transform: scale(1.1);
+    }
+
+    /* Ajustes responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding-bottom: 20px;
+        }
+
+        .iconos-inferiores {
+            display: flex;
+        }
+
+        .iconos-inferiores .icono span {
+            display: none;
+        }
+
+        .iconos-inferiores .icono i {
+            font-size: 1.8rem;
+            margin-bottom: 0;
+        }
+
+        .health-metric {
+            padding: 10px;
+        }
+
+        .health-metric .value {
+            font-size: 1.5rem;
+        }
+
+        .card-header {
+            padding: 0.75rem;
+        }
+
+        .activity-item,
+        .pausa-item {
+            padding: 0.5rem;
+        }
+
+        /* Ocultar elementos menos importantes en móviles */
+        .health-metric .trend,
+        .health-metric .progress {
+            display: none;
+        }
+
+        /* Alerta más compacta en móviles */
+        .alert-wearable {
+            padding: 0.5rem;
+        }
+
+        .alert-wearable .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Ajustes para tablets */
+    @media (min-width: 577px) and (max-width: 768px) {
+        .col-md-4 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .health-metric .value {
+            font-size: 1.75rem;
+        }
+
+        .iconos-inferiores .icono span {
+            font-size: 0.7rem;
+            display: block;
+        }
+    }
+
+    /* Ajustes de grid */
+    .row {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .col-md-4,
+    .col-6,
+    .col-lg-6 {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+</style>
+</head>
+
+<body>
+    <!-- Modal para Alertas -->
+    <div class="modal fade alert-modal" id="alertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alerta de Salud</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4 id="alertTitle">Alerta de Sedentarismo</h4>
+                    <p id="alertMessage">Llevas más de 10 hora sin Hacer un pausa Activa. Te recomendamos hacer sus pausa activas recomendamos.
+                    </p>
+                    <audio id="alertSound"
+                        src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3"></audio>
+                    <button class="btn btn-primary mt-3" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i>Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="text-center mb-4">
+            <img src="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" alt="Logo" class="rounded-circle mb-2"
+                style="width: 50px; height: 50px" />
+            <h5 class="text-white logo-text">Nombre</h5>
+        </div>
+
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="Dasboard.html">
+                    <i class="fas fa-heartbeat"></i>
+                    <span class="nav-link-text">Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./perfil.html">
+                    <i class="fas fa-user"></i>
+                    <span class="nav-link-text">Perfil</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="./pausas.html">
+                    <i class="fas fa-coffee"></i>
+                    <span class="nav-link-text">Pausas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./gamificacion.html">
+                    <i class="fas fa-trophy"></i>
+                    <span class="nav-link-text">Gamificación</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="./index.html">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="nav-link-text">Logout</span>
+                </a>
+            </li>
+
+
+        </ul>
+
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Bienvenido al Dashboard SST , nombre</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary active">Hoy</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Semana</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Mes</button>
+                </div>
+                <button class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Alertas Compactas -->
+        <div class="alert alert-warning alert-wearable d-flex align-items-center py-2 px-3 pulse" role="alert"
+            data-bs-toggle="modal" data-bs-target="#alertModal">
+            <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-0 fs-6">Alerta de sedentarismo</h6>
+                <p class="mb-0 small" id="alert-text">Llevas más de 1 hora sin moverte</p>
+            </div>
+            <button type="button" class="btn btn-sm btn-warning ms-2 py-1" id="alert-button">Pausa</button>
+        </div>
+
+        <!-- Métricas principales -->
+        <div class="row mb-4 gx-2">
+            <!-- Frecuencia cardíaca -->
+            <div class="col-md-4 col-6 mb-3">
+                <div class="card health-metric">
+                    <div class="value heart-rate">72</div>
+                    <div class="label">Frecuencia cardíaca</div>
+                    <small class="trend text-success"><i class="fas fa-arrow-down"></i> 5% menos que ayer</small>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 65%;" aria-valuenow="65"
+                            aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">65% de rango saludable</small>
+                </div>
+            </div>
+
+            <!-- Pasos -->
+            <div class="col-md-4 col-6 mb-3">
+                <div class="card health-metric">
+                    <div class="value steps">8,250</div>
+                    <div class="label">Pasos hoy</div>
+                    <small class="trend text-success"><i class="fas fa-arrow-up"></i> 12% más que ayer</small>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 82%;" aria-valuenow="82"
+                            aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">82% de tu meta diaria</small>
+                </div>
+            </div>
+
+            <!-- Calorías -->
+            <div class="col-md-4 col-6 mb-3">
+                <div class="card health-metric">
+                    <div class="value calories">420</div>
+                    <div class="label">Calorías quemadas</div>
+                    <small class="trend text-success"><i class="fas fa-arrow-up"></i> 8% más que ayer</small>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 58%;" aria-valuenow="58"
+                            aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">58% de tu meta diaria</small>
+                </div>
+            </div>
+
+            <!-- Minutos activos -->
+            <div class="col-md-4 col-6 mb-3">
+                <div class="card health-metric">
+                    <div class="value activity">45</div>
+                    <div class="label">Minutos activos</div>
+                    <small class="trend text-success"><i class="fas fa-arrow-up"></i> 15% más que ayer</small>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;" aria-valuenow="75"
+                            aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">75% de tu meta diaria</small>
+                </div>
+            </div>
+
+            <!-- Oxígeno en sangre -->
+            <div class="col-md-4 col-6 mb-3">
+                <div class="card health-metric">
+                    <div class="value oxygen">98%</div>
+                    <div class="label">Oxígeno en sangre</div>
+                    <small class="trend text-success"><i class="fas fa-check-circle"></i> Nivel normal</small>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar" style="background-color: #9b59b6;" role="progressbar"
+                            style="width: 98%;" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">Nivel óptimo</small>
+                </div>
+            </div>
+
+            <!-- Nivel de estrés -->
+            <div class="col-md-4 col-6 mb-3">
+                <div class="card health-metric">
+                    <div class="value stress">3.2</div>
+                    <div class="label">Nivel de estrés</div>
+                    <small class="trend text-warning"><i class="fas fa-exclamation-circle"></i> Moderado</small>
+                    <div class="progress progress-thin mt-2">
+                        <div class="progress-bar" style="background-color: #d35400;" role="progressbar"
+                            style="width: 64%;" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">Escala 1-5</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen de actividad -->
+        <div class="row gx-2">
+            <!-- Actividad reciente -->
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Actividad reciente</span>
+                        <button class="btn btn-sm btn-outline-primary">Ver todo</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item activity-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-walking text-success me-2"></i>
+                                    <span>Pausa activa completada</span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Hace 15 min</small>
+                                    <span class="badge bg-success">+10 pts</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item activity-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-heartbeat text-danger me-2"></i>
+                                    <span>Ritmo cardíaco elevado</span>
+                                </div>
+                                <small class="text-muted">Hace 1 hora</small>
+                            </li>
+                            <li class="list-group-item activity-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-trophy text-warning me-2"></i>
+                                    <span>Reto completado</span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Hace 3 horas</small>
+                                    <span class="badge bg-warning">+50 pts</span>
+                                </div>
+                            </li>
+                            <li class="list-group-item activity-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-glass-water text-info me-2"></i>
+                                    <span>Recordatorio de hidratación</span>
+                                </div>
+                                <small class="text-muted">Hace 4 horas</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Próximas pausas -->
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Próximas pausas</span>
+                        <button class="btn btn-sm btn-outline-primary">Configurar</button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Pausa 1 -->
+                        <div class="mb-3 pausa-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0">Estiramiento cervical</h6>
+                                <span class="badge bg-primary">Recomendada</span>
+                            </div>
+                            <small class="text-muted d-block">Para trabajos de oficina (10:30 AM)</small>
+                            <div class="progress progress-thin mt-2">
+                                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25"
+                                    aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">En 15 minutos</small>
+                        </div>
+
+                        <!-- Pausa 2 -->
+                        <div class="mb-3 pausa-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0">Ejercicios oculares</h6>
+                                <span class="badge bg-secondary">Programada</span>
+                            </div>
+                            <small class="text-muted d-block">Para fatiga visual (11:15 AM)</small>
+                            <div class="progress progress-thin mt-2">
+                                <div class="progress-bar bg-secondary" role="progressbar" style="width: 10%;"
+                                    aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">En 1 hora</small>
+                        </div>
+
+                        <!-- Pausa 3 -->
+                        <div class="pausa-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0">Movilidad lumbar</h6>
+                                <span class="badge bg-secondary">Programada</span>
+                            </div>
+                            <small class="text-muted d-block">Para dolor de espalda (12:30 PM)</small>
+                            <div class="progress progress-thin mt-2">
+                                <div class="progress-bar bg-secondary" role="progressbar" style="width: 5%;"
+                                    aria-valuenow="5" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">En 2 horas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de iconos inferiores (solo para móviles) -->
+    <!-- Barra de iconos inferiores (solo para móviles) -->
+    <div class="iconos-inferiores d-lg-none">
+        <a href="./Dasboard.html" class="icono">
+            <i class="fas fa-heartbeat"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="./perfil.html" class="icono">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+        <a href="./pausas.html" class="icono">
+            <i class="fas fa-coffee"></i>
+            <span>Salud</span>
+        </a>
+        <a href="./gamificacion.html" class="icono active">
+            <i class="fas fa-trophy"></i>
+            <span>Gamificación</span>
+        </a>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Mostrar menú de admin si el usuario es administrador
+        const isAdmin = true; // Cambiar a false para vista de trabajador normal
+        if (isAdmin) {
+            document.getElementById('admin-menu').classList.remove('d-none');
+        }
+
+        // Ajustes para móviles
+        function adjustForMobile() {
+            const isMobile = window.innerWidth <= 768;
+            const alertText = document.getElementById('alert-text');
+            const alertButton = document.getElementById('alert-button');
+
+            if (isMobile) {
+                // Simplificar la alerta en móviles
+                alertText.textContent = '1h inactivo';
+                alertButton.textContent = 'Pausa';
+
+                // Ocultar elementos complejos en móviles
+                document.querySelectorAll('.health-metric .trend, .health-metric .progress').forEach(el => {
+                    el.style.display = 'none';
+                });
+            } else {
+                // Restaurar en desktop
+                alertText.textContent = 'Llevas más de 1 hora sin moverte. Te recomendamos una pausa activa.';
+                alertButton.textContent = 'Realizar pausa';
+
+                document.querySelectorAll('.health-metric .trend, .health-metric .progress').forEach(el => {
+                    el.style.display = 'block';
+                });
+            }
+        }
+
+        // Mostrar modal de alerta automáticamente
+        document.addEventListener('DOMContentLoaded', function () {
+            // Ajustar diseño para el tamaño de pantalla actual
+            adjustForMobile();
+
+            // Simular alerta después de 3 segundos
+            setTimeout(function () {
+                const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                const alertSound = document.getElementById('alertSound');
+
+                // Solo mostrar si no está en modo administrador
+                if (!isAdmin) {
+                    alertModal.show();
+                    alertSound.play();
+                }
+            }, 3000);
+
+            // Manejar clics en los iconos inferiores
+            document.querySelectorAll('.iconos-inferiores .icono').forEach(icono => {
+                icono.addEventListener('click', function () {
+                    // Remover clase active de todos los iconos
+                    document.querySelectorAll('.iconos-inferiores .icono').forEach(i => {
+                        i.classList.remove('active');
+                    });
+
+                    // Agregar clase active al icono clickeado
+                    this.classList.add('active');
+
+                    // Aquí puedes agregar lógica para cambiar de página/sección
+                    // según el icono seleccionado
+                });
+            });
+        });
+
+        // Ajustar diseño cuando cambia el tamaño de la pantalla
+        window.addEventListener('resize', adjustForMobile);
+
+        // Simular datos de wearables
+        function simulateWearableData() {
+            const metrics = [
+                { id: 'heart-rate', min: 65, max: 85 },
+                { id: 'steps', min: 7000, max: 10000 },
+                { id: 'calories', min: 300, max: 600 },
+                { id: 'activity', min: 30, max: 60 },
+                { id: 'oxygen', min: 95, max: 100 },
+                { id: 'stress', min: 1, max: 5 }
+            ];
+
+            metrics.forEach(metric => {
+                const element = document.querySelector(`.value.${metric.id.replace(' ', '-')}`);
+                if (element) {
+                    // Simular pequeño cambio en los datos
+                    const currentValue = parseInt(element.textContent) || parseFloat(element.textContent);
+                    const change = (Math.random() * 5) - 2.5; // Cambio entre -2.5 y +2.5
+                    let newValue = currentValue + change;
+
+                    // Mantener dentro de rangos razonables
+                    newValue = Math.max(metric.min, Math.min(metric.max, newValue));
+
+                    // Formatear según la métrica
+                    if (metric.id === 'oxygen') {
+                        element.textContent = Math.round(newValue) + '%';
+                    } else if (metric.id === 'stress') {
+                        element.textContent = newValue.toFixed(1);
+                    } else {
+                        element.textContent = Math.round(newValue);
+                    }
+                }
+            });
+
+            // Actualizar cada 5 segundos
+            setTimeout(simulateWearableData, 5000);
+        }
+
+        // Iniciar simulación de datos
+        simulateWearableData();
+    </script>
+</body>
+
+</html>

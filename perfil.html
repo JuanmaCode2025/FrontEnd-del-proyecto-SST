@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SST - Mi Perfil</title>
+
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" width="500px" type="image/png">
+</head>
+<style>
+    /* Variables de color */
+    :root {
+        --primary-color: #1a5276;
+        --secondary-color: #2980b9;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #3498db;
+        --light-blue: #e8f4fc;
+    }
+
+    /* Estilos generales */
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Roboto', sans-serif;
+        overflow-x: hidden;
+        padding-bottom: 80px;
+        /* Espacio para los iconos fijos */
+    }
+
+    /* Sidebar */
+    .sidebar {
+       background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+        color: white;
+        height: 100vh;
+        position: fixed;
+        padding-top: 20px;
+        transition: all 0.3s;
+        z-index: 1000;
+        width: 80px;
+        left: 0;
+        top: 0;
+        overflow: hidden;
+    }
+
+    .sidebar:hover {
+        width: 250px;
+    }
+
+    .sidebar:hover .nav-link-text,
+    .sidebar:hover .logo-text,
+    .sidebar:hover .user-info {
+        opacity: 1;
+        height: auto;
+    }
+
+    .sidebar .nav-link-text,
+    .sidebar .logo-text,
+    .sidebar .user-info {
+        opacity: 0;
+        transition: opacity 0.2s;
+        height: 0;
+        overflow: hidden;
+    }
+
+    .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 5px;
+        border-radius: 5px;
+        padding: 10px 15px;
+        white-space: nowrap;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+
+    .sidebar .nav-link i {
+        font-size: 1.2rem;
+        min-width: 24px;
+        text-align: center;
+    }
+
+    /* Contenido principal */
+    .main-content {
+        margin-left: 80px;
+        padding: 20px;
+        transition: margin-left 0.3s;
+    }
+
+    .sidebar:hover~.main-content {
+        margin-left: 250px;
+    }
+
+    /* Tarjetas */
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        border: none;
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    /* Avatar */
+    .avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Barra de iconos inferiores */
+    .iconos-inferiores {
+        display: none;
+        /* Oculto por defecto (se muestra solo en móviles) */
+        justify-content: space-around;
+        padding: 10px 0;
+        background-color: white;
+        border-top: 1px solid #e0e0e0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .iconos-inferiores .icono {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.8rem;
+        padding: 5px 10px;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .iconos-inferiores .icono i {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        color: var(--primary-color);
+        transition: all 0.3s;
+    }
+
+    /* Icono activo en la barra inferior */
+    .iconos-inferiores .icono.active {
+        background-color: var(--light-blue);
+    }
+
+    .iconos-inferiores .icono.active i {
+        color: var(--secondary-color);
+        transform: scale(1.1);
+    }
+
+    /* Tabla de historial laboral */
+    .historial-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .historial-table th,
+    .historial-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .historial-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .historial-table tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Ajustes responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding-bottom: 20px;
+        }
+
+        .iconos-inferiores {
+            display: flex;
+        }
+
+        .iconos-inferiores .icono span {
+            display: none;
+        }
+
+        .iconos-inferiores .icono i {
+            font-size: 1.8rem;
+            margin-bottom: 0;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .historial-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+
+    /* Ajustes para tablets */
+    @media (min-width: 577px) and (max-width: 768px) {
+        .iconos-inferiores .icono span {
+            font-size: 0.7rem;
+            display: block;
+        }
+    }
+
+    /* Ajustes de grid */
+    .row {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .col-md-4,
+    .col-6,
+    .col-lg-6 {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+</style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="text-center mb-4">
+            <img src="https://cdn-icons-png.flaticon.com/512/10293/10293278.png" alt="Logo" class="rounded-circle mb-2"
+                style="width: 50px; height: 50px" />
+            <h5 class="text-white logo-text">Nombre</h5>
+        </div>
+
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="./Dasboard.html">
+                    <i class="fas fa-heartbeat"></i>
+                    <span class="nav-link-text">Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="perfil.html">
+                    <i class="fas fa-user"></i>
+                    <span class="nav-link-text">Perfil</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="./pausas.html">
+                    <i class="fas fa-coffee"></i>
+                    <span class="nav-link-text">Pausas</span>
+                </a>
+            </li>
+      
+            <li class="nav-item">
+                <a class="nav-link" href="./gamificacion.html">
+                    <i class="fas fa-trophy"></i>
+                    <span class="nav-link-text">Gamificación</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./index.html">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="nav-link-text">Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Mi Perfil</h1>
+            <button class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Editar perfil
+            </button>
+        </div>
+
+        <div class="row">
+            <!-- Columna izquierda - Información personal -->
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        Información Personal
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="https://via.placeholder.com/150" class="avatar mb-3" alt="Foto de perfil">
+                        <h4>Juan Pérez</h4>
+                        <p class="text-muted mb-1">Desarrollador Senior</p>
+                        <p class="text-muted">Departamento de Tecnología</p>
+
+                        <div class="text-start mt-4">
+                            <p><i class="fas fa-id-badge me-2"></i> <strong>ID Empleado:</strong> EMP-2020-0015</p>
+                            <p><i class="fas fa-envelope me-2"></i> juan.perez@empresa.com</p>
+                            <p><i class="fas fa-phone me-2"></i> +57 123 456 7890</p>
+                            <p><i class="fas fa-calendar-alt me-2"></i> <strong>Fecha ingreso:</strong> 15/03/2020</p>
+                            <p><i class="fas fa-map-marker-alt me-2"></i> Bogotá, Colombia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dispositivos Wearables -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Dispositivos Wearables</span>
+                        <button class="btn btn-sm btn-primary">Agregar</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">Pulsera inteligente XYZ</h6>
+                                <small class="text-success"><i class="fas fa-circle"></i> Conectado</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger">Desconectar</button>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">Reloj inteligente ABC</h6>
+                                <small class="text-muted"><i class="fas fa-circle"></i> No conectado</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary">Conectar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha - Información laboral y salud -->
+            <div class="col-lg-8">
+                <!-- Configuración de Salud -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Información de Salud
+                    </div>
+                    <div class="card-body">
+                        <h5 class="mb-3">Enfermedades o condiciones que afectan su salud</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="hipertension">
+                                    <label class="form-check-label" for="hipertension">Hipertensión arterial</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="diabetes">
+                                    <label class="form-check-label" for="diabetes">Diabetes</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="problemasCardiacos">
+                                    <label class="form-check-label" for="problemasCardiacos">Problemas cardiacos</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="problemasEspalda" checked>
+                                    <label class="form-check-label" for="problemasEspalda">Problemas de espalda</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="problemasVision">
+                                    <label class="form-check-label" for="problemasVision">Problemas de visión</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="ansiedad">
+                                    <label class="form-check-label" for="ansiedad">Ansiedad/Depresión</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="otrasEnfermedades" class="form-label">Otras condiciones médicas</label>
+                            <textarea class="form-control" id="otrasEnfermedades" rows="2"
+                                placeholder="Describa cualquier otra condición que debamos conocer"></textarea>
+                        </div>
+
+                        <h5 class="mt-4 mb-3">Preferencias de notificaciones</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifPausas" checked>
+                                    <label class="form-check-label" for="notifPausas">Recordatorios de pausas
+                                        activas</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifHidratacion" checked>
+                                    <label class="form-check-label" for="notifHidratacion">Recordatorios de
+                                        hidratación</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifEstres" checked>
+                                    <label class="form-check-label" for="notifEstres">Alertas de estrés</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifLogros" checked>
+                                    <label class="form-check-label" for="notifLogros">Logros y puntos</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial Laboral -->
+                <div class="card">
+                    <div class="card-header">
+                        Historial Laboral
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="historial-table">
+                                <thead>
+                                    <tr>
+                                        <th>Puesto</th>
+                                        <th>Área</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Fecha Fin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Desarrollador Senior</td>
+                                        <td>Tecnología</td>
+                                        <td>15/03/2022</td>
+                                        <td>Actual</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Desarrollador Junior</td>
+                                        <td>Tecnología</td>
+                                        <td>15/03/2020</td>
+                                        <td>14/03/2022</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Practicante Desarrollo</td>
+                                        <td>Tecnología</td>
+                                        <td>01/02/2019</td>
+                                        <td>14/03/2020</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de iconos inferiores (solo para móviles) -->
+    <div class="iconos-inferiores d-lg-none">
+        <a href="./Dasboard.html" class="icono">
+           <i class="fas fa-heartbeat"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="perfil.html" class="icono active">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+        <a href="./pausas.html" class="icono">
+            <i class="fas fa-coffee"></i>
+            <span>Salud</span>
+        </a>
+        <a href="./gamificacion.html" class="icono">
+            <i class="fas fa-trophy"></i>
+            <span>Reportes</span>
+        </a>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Mostrar menú de admin si el usuario es administrador
+        const isAdmin = true; // Cambiar a false para vista de trabajador normal
+        if (isAdmin) {
+            document.getElementById('admin-menu').classList.remove('d-none');
+        }
+
+        // Manejar clics en los iconos inferiores
+        document.querySelectorAll('.iconos-inferiores .icono').forEach(icono => {
+            icono.addEventListener('click', function () {
+                // Remover clase active de todos los iconos
+                document.querySelectorAll('.iconos-inferiores .icono').forEach(i => {
+                    i.classList.remove('active');
+                });
+
+                // Agregar clase active al icono clickeado
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
